@@ -18,10 +18,22 @@
 #define PIN_CE 10     // Пин управления чипом радиомодуля (Chip Enable)
 #define PIN_CS 9      // Пин выбора чипа радиомодуля по SPI (Chip Select)
 
+// Определение коэффициентов для расчета концентрации CO2
+#define COEFF_A 110.47  // Коэффициент A для расчета концентрации CO2
+#define COEFF_B -2.862  // Коэффициент B для расчета концентрации CO2
+
+// Определение параметров для настройки датчика MQ135
+#define BOARD_TYPE "Arduino Nano"   // Тип платы
+#define VOLTAGE_RESOLUTION 5        // Разрешение напряжения
+#define BIT_RESOLUTION 10           // Разрешение битов для аналогового сигнала
+#define MQ_TYPE "MQ-135"            // Тип датчика
+#define RL 2                        // Сопротивление резистора нагрузки (кОм)
+#define R0 9.65                     // Базовое сопротивление датчика при чистом воздухе (кОм)
+
 // Инициализация объектов датчиков
 GyverBME280 bme;
 DHT dht(PIN_DHT, DHT11);
-MQUnifiedsensor MQ135("Arduino Nano", 5, 10, PIN_MQ135, "MQ-135");
+MQUnifiedsensor MQ135(BOARD_TYPE, VOLTAGE_RESOLUTION, BIT_RESOLUTION, PIN_MQ135, MQ_TYPE);
 
 // Настройка радиомодуля nRF24L01
 RF24 radio(PIN_CE, PIN_CS);
@@ -50,8 +62,8 @@ void setup()
     // Настройка и начало работы датчиков
     bme.begin();
     dht.begin();
-    MQ135.setRL(2);
-    MQ135.setR0(9.65);
+    MQ135.setRL(RL);
+    MQ135.setR0(R0);
     MQ135.init();
 
     // Настройка радиомодуля nRF24L01
@@ -106,7 +118,7 @@ bool readLightSensor()
     return !digitalRead(PIN_LIGHT);
 }
 
-// Функция чтения чтения со всех датчиков с заполнение полей пакета данных
+// Функция чтения данных со всех датчиков с заполнение полей пакета данных
 void readAllSensors(DataPacket& data)
 {
     data.temperature = bme.readTemperature();
@@ -114,8 +126,8 @@ void readAllSensors(DataPacket& data)
     data.humidity = dht.readHumidity();
 
     MQ135.update();
-    MQ135.setA(110.47);
-    MQ135.setB(-2.862);
+    MQ135.setA(COEFF_A);
+    MQ135.setB(COEFF_B);
     data.gasConcentration = MQ135.readSensor();
 
     data.waterLevel = readWaterSensor();
