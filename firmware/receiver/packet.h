@@ -1,11 +1,13 @@
 #pragma once
 
+// Перечисление режимов передачи данных
 enum Command : unsigned char
 {
     CMD_BIN = 1,    // команда на передачу данных в бинарном формате
     CMD_NMEA = 2    // команда на передачу данных в формате NMEA
 };
 
+// Перечисление идентификаторов пакетов
 enum PacketType : unsigned char
 {
     DataType = 1,       // идентификатор пакета данных
@@ -13,6 +15,7 @@ enum PacketType : unsigned char
 };
 
 #pragma pack(push, 1)
+// Структура пакета данных
 struct DataPacket
 {
     unsigned short syncMark = 0xDADA;   // синхрометка
@@ -27,6 +30,7 @@ struct DataPacket
     unsigned short controlSum;          // контрольная сумма 
 };
 
+// Структура пакета команды 
 struct CommandPacket
 {
     unsigned short syncMark = 0xDADA;   // синхрометка
